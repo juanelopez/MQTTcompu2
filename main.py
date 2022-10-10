@@ -2,8 +2,11 @@
 import random
 
 from paho.mqtt import client as mqtt_client
-
-
+import asyncio 
+import os
+import argparse
+import queue
+from concurrent import futures
 broker = 'qrio.com.ar'
 port = 1883
 topic = "prod/#"
@@ -28,25 +31,63 @@ def connect_mqtt() -> mqtt_client:
     return client
 
 
-def subscribe(client: mqtt_client):
+def subscribe(client: mqtt_client,query_mqtt):
     def on_message(client, userdata, msg):
-        print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
-
+        query_mqtt.put("HOLA")
+        print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")               
     client.subscribe(topic)
-    
     client.on_message = on_message
 
-def suball(client: mqtt_client):
+def suball(client: mqtt_client,query_mqtt):
     def onmsg(client, userdata,msg):
         print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
     client.subscribe(alltopic)
     client.on_message = onmsg
-def run():
+##########WEBSERVER############
+async def handle(reader, writer):
+    data = await reader.read(100)
+    request_recibida = []
+    request_recibida = data.split(b'\r\n')
+    message = data.decode()
+    addr = writer.get_extra_info('peername')
+    #logger = asyncio.create_task(complementarias.mostrar_direccion(addr,directorio))
+    #peticion = asyncio.create_task(devolver_peticion(request_recibida,writer,directorio,cantidad_lectura))
+    #await logger
+    #await peticion
+    writer.close()
+async def webServer():
+    PORT = 5000
+    server = await asyncio.start_server(lambda r,w: handle(r,w), ('::','0.0.0.0'),PORT)
+    addr = server.sockets[0].getsockname()
+    print(f'Serving on {addr}')  
+    async with server:
+        await server.serve_forever()
+def runmqtt(query_mqtt):
+    print("START MQTT")
     client = connect_mqtt()
-    subscribe(client)
-    suball(client)
+    subscribe(client,query_mqtt)
+    suball(client,query_mqtt)    
     client.loop_forever()
-
-
+    #asyncio.run(webServer())
+def runserver():
+    print("START SERVER")
+    asyncio.run(webServer())
+def savemqtt(query_mqtt):
+    print("GUARDADO")
+    while not query_mqtt.empty():
+        print("LLEGA")
+        msg = query_mqtt.get()
+        print(msg)
 if __name__ == '__main__':
-    run()
+    print("MAIN")
+    query_mqtt = queue.Queue()
+    
+    hilos = futures.ThreadPoolExecutor()
+    hilo_mqtt = hilos.submit(runmqtt,query_mqtt)
+    hilo_server = hilos.submit(runserver)
+    hilo_guardado = hilos.submit(savemqtt,query_mqtt)
+    hilo_mqtt.result()
+    hilo_server.result()
+    hilo_guardado.result()
+    
+    #run()
