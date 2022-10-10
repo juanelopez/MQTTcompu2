@@ -32,9 +32,10 @@ def connect_mqtt() -> mqtt_client:
 
 
 def subscribe(client: mqtt_client,query_mqtt):
-    def on_message(client, userdata, msg):
-        query_mqtt.put("HOLA")
-        print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")               
+    def on_message(client, userdata, msg):        
+        var = msg.payload.decode()
+        query_mqtt.put(var)
+        print(f"Received `{var}` from `{msg.topic}` topic")               
     client.subscribe(topic)
     client.on_message = on_message
 
@@ -74,10 +75,12 @@ def runserver():
     asyncio.run(webServer())
 def savemqtt(query_mqtt):
     print("GUARDADO")
-    while not query_mqtt.empty():
-        print("LLEGA")
-        msg = query_mqtt.get()
-        print(msg)
+    while True:    
+        print (query_mqtt.empty())
+        while not query_mqtt.empty():
+            print("LLEGA")
+            msg = query_mqtt.get()
+            print(msg)
 if __name__ == '__main__':
     print("MAIN")
     query_mqtt = queue.Queue()
