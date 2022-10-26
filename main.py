@@ -10,7 +10,7 @@ from concurrent import futures
 import datetime
 
 
-broker = 'qrio.com.ar'
+#broker = 'qrio.com.ar'
 port = 1883
 topic = "prod/#"
 alltopic ="all/#"
@@ -20,7 +20,7 @@ client_id = f'python-mqtt-{random.randint(0, 100)}'
 # password = 'public'
 
 
-def connect_mqtt() -> mqtt_client:
+def connect_mqtt(broker) -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
             print("Connected to MQTT Broker!")
@@ -36,35 +36,35 @@ def connect_mqtt() -> mqtt_client:
 
 def subscribe(client: mqtt_client,query_mqtt):
     def on_message(client, userdata, msg):        
-        var = msg.payload.decode()        
-        query_mqtt.put(str(var))
         query_mqtt.put(str(msg.topic))
-        print(f"Received `{var}` from `{msg.topic}` topic")               
+        query_mqtt.put(str(msg.payload.decode()))        
+        print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")               
     client.subscribe(topic)
     client.on_message = on_message
 
 def suball(client: mqtt_client,query_mqtt):
     def onmsg(client, userdata,msg):
+        query_mqtt.put(str(msg.topic))
+        query_mqtt.put(str(msg.payload.decode()))
         print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
     client.subscribe(alltopic)
     client.on_message = onmsg
 ##########WEBSERVER############
-async def handle(reader, writer):
+async def handle(reader, writer,cantidad_lectura):
     data = await reader.read(100)
     request_recibida = []
     request_recibida = data.split(b'\r\n')
     message = data.decode()
     addr = writer.get_extra_info('peername')
     #logger = asyncio.create_task(complementarias.mostrar_direccion(addr,directorio))
-    peticion = asyncio.create_task(devolver_peticion(request_recibida,writer))
+    peticion = asyncio.create_task(devolver_peticion(request_recibida,writer,cantidad_lectura))
     #await logger
     await peticion
     writer.close()
 
 
-async def devolver_peticion(request_recibida,writer):
+async def devolver_peticion(request_recibida,writer,cantidad_lectura):
     directorio = "/"
-    cantidad_lectura = 1024
     dividir_request = request_recibida[0].decode().split(" ")
     metodo = dividir_request[0]
     archivo = dividir_request[1]
@@ -133,37 +133,6 @@ async def devolver_peticion(request_recibida,writer):
                         writer.write(lectura)
                         lectura = os.read(fd1,cantidad_lectura)
                     os.close(fd1)
-                '''
-                fd1 = os.open(directorio+archivo[1:],os.O_RDONLY)
-                request = version+b' 200 OK\n'
-                content_type = "Content-Type: text/"+extension+"\n"
-                request_lenght = b'Content-Lenght:20000\n\n'
-                writer.write(request)
-                writer.write(bytes(content_type,'utf-8'))
-                writer.write(request_lenght)             
-                lectura = os.read(fd1,cantidad_lectura)
-                while(lectura != b''):
-                    writer.write(lectura)
-                    lectura = os.read(fd1,cantidad_lectura)
-                os.close(fd1)
-                writer.write("HOLA")                                
-                '''
-                '''
-                fecha = datetime.date.today()
-                fd1 = os.open(str(fecha),os.O_RDONLY)
-                request = version+b' 200 OK\n'
-                content_type = "Content-Type: text/plain\n"
-                request_lenght = b'Content-Lenght:20000\n\n'
-                writer.write(request)
-                writer.write(bytes(content_type,'utf-8'))
-                writer.write(request_lenght)  
-                lectura = os.read(fd1,cantidad_lectura)
-                while(lectura != b''):
-                    writer.write(lectura)
-                    lectura = os.read(fd1,cantidad_lectura)
-                os.close(fd1)               
-                '''
-
             except:
                 print("El archivo no existe")				
                 request = version +b' 404 Not Found\n'
@@ -175,22 +144,22 @@ async def devolver_peticion(request_recibida,writer):
 
 
 
-async def webServer():
-    PORT = 5000
-    server = await asyncio.start_server(lambda r,w: handle(r,w), ('::','0.0.0.0'),PORT)
+async def webServer(PORT,cantidad_lectura):
+    server = await asyncio.start_server(lambda r,w: handle(r,w,cantidad_lectura), ('::','0.0.0.0'),PORT)
     addr = server.sockets[0].getsockname()
     print(f'Serving on {addr}')  
     async with server:
         await server.serve_forever()
-def runmqtt(query_mqtt):
+
+def runmqtt(query_mqtt,broker):
     print("START MQTT")
-    client = connect_mqtt()
+    client = connect_mqtt(broker)
     subscribe(client,query_mqtt)
-    #suball(client,query_mqtt)    
+    suball(client,query_mqtt)    
     client.loop_forever()
-def runserver():
+def runserver(PORT,cantidad_lectura):
     print("START SERVER")
-    asyncio.run(webServer())
+    asyncio.run(webServer(PORT,cantidad_lectura))
 def savemqtt(query_mqtt):
     print("GUARDADO")
     fecha = datetime.date.today()  
@@ -228,18 +197,29 @@ def pruebaqueue(query_mqtt):
         query_mqtt.put('{"estadisticas":true}\n')                
         #topico = "prod/test"
 if __name__ == '__main__':
-    print("MAIN")
+    #print("MAIN")
     #print(datetime.datetime.now().time())
-    
+    parser = argparse.ArgumentParser(description='Final computacion 2')
+    parser.add_argument('-s', '--size',action="store", type= int, default=1024, help="Bloque de lectura máxima para los documentos")
+    parser.add_argument('-p', '--port',action="store", dest="port", required=True, type=int, help="Puerto en donde espera conexiones nuevas")
+    parser.add_argument('-b','--b',action="store",dest = "broker",required= True,type=str , help = "Broker al cual se quiere conectar")    
+    parser.add_argument('-l','--list', action='append', dest = "topic" ,help='<Required> Set flag',type=str, required=True)
+    args = parser.parse_args()
+    PORT = args.port
+    cantidad_lectura = args.size
+    algo = args.topic
+    broker = args.broker
     query_mqtt = queue.Queue()    
+    print(algo)
+    '''
     hilos = futures.ThreadPoolExecutor()
-    hilo_mqtt = hilos.submit(runmqtt,query_mqtt) #hilo de monitor mqtt
-    hilo_server = hilos.submit(runserver) #hilo de servidor web 
+    hilo_mqtt = hilos.submit(runmqtt,query_mqtt,broker) #hilo de monitor mqtt
+    hilo_server = hilos.submit(runserver,PORT,cantidad_lectura) #hilo de servidor web 
     hilo_guardado = hilos.submit(savemqtt,query_mqtt) #hilo guardado de mqtt
     #hilo_prueba_queue = hilos.submit(pruebaqueue,query_mqtt)
     hilo_mqtt.result()
     hilo_server.result()
     hilo_guardado.result()
     #hilo_prueba_queue.result()
-    
+    '''
     #run()
