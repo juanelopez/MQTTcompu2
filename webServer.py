@@ -16,27 +16,20 @@ async def handle(reader, writer,cantidad_lectura,directory):
     writer.close()
 
 
-async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):    
+async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
+    directorio = "/"
     dividir_request = request_recibida[0].decode().split(" ")
     metodo = dividir_request[0]
     archivo = dividir_request[1]
-    if(directory == "/"):
-        directory = ""
-        file_open = archivo[1:]
-    if(archivo == "/"):
+    if(directorio == "/"):
+    	directorio = ""
+    if (archivo == "/"):
         archivo = "/index.html"
         extension = "html"
         dividir_500_extension = ["html"]    
     else:
         extension = "txt"        
         dividir_500_extension = ["txt"]
-        if(directory != ''):
-            file_open = directory+archivo     
-            print("SI FILE")
-            print(file_open)
-            var = os.open(file_open, os.O_RDONLY)
-            print(os.read(var,1024))
-            os.close(var)
     version = str.encode(dividir_request[2])    
     if(len(dividir_500_extension) > 1):
         enviar_500 = version + b' 500 Internal Server Error\n'
@@ -45,50 +38,42 @@ async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
         if(metodo == "POST"):
             enviar_500 = version + b' 500 Internal Server Error\n'
             writer.write(enviar_500)
-        elif(metodo == "GET"):            
-            if(archivo == "/index.html"):                    
-                print("Pantalla de inicio")
-                request = version+b' 200 OK\n'
-                content_type = "Content-Type: text/"+extension+"\n"
-                request_lenght = b'Content-Lenght:20000\n\n'
-                writer.write(request)
-                writer.write(bytes(content_type,'utf-8'))
-                writer.write(request_lenght)
-                writer.write(bytes("<HTML><HEAD><TITLE>Pantalla de inicio</TITLE></HEAD><BODY>",'utf-8'))                    
-                if(directory == ""):
-                    file_dir = os.scandir()
+        elif(metodo == "GET"):
+            try:
+                if(archivo == "/index.html"):                    
+                    print("Pantalla de inicio")
+                    request = version+b' 200 OK\n'
+                    content_type = "Content-Type: text/"+extension+"\n"
+                    request_lenght = b'Content-Lenght:20000\n\n'
+                    writer.write(request)
+                    writer.write(bytes(content_type,'utf-8'))
+                    writer.write(request_lenght)
+                    writer.write(bytes("<HTML><HEAD><TITLE>Pantalla de inicio</TITLE></HEAD><BODY>",'utf-8'))
+                    for path in os.scandir():
+                        if(path.is_file()):                            
+                            link = '<a href="'+path.name+'"''</a>'+path.name+"<br>"                            
+                            writer.write(bytes(link,'utf-8'))
+                    writer.write(bytes("<a href='hola'>hola</a>",'utf-8'))
+                    writer.write(bytes("</BODY></HTML>",'utf-8'))
                 else:
-                    file_dir = os.scandir(directory)
-                for path in file_dir:
-                    if(path.is_file()):                            
-                        link = '<a href="'+path.name+'"''</a>'+path.name+"<br>"                            
-                        writer.write(bytes(link,'utf-8'))
-                writer.write(bytes("<a href='hola'>hola</a>",'utf-8'))
-                writer.write(bytes("</BODY></HTML>",'utf-8'))
-            else:                                                                       
-                print("ARCHIVO")
-                print(archivo)
-                print(file_open)
-                fd1 = os.open(file_open,os.O_RDONLY)                                        
-                request = version+b' 200 OK\n'
-                content_type = "Content-Type: text/plain\n"
-                request_lenght = "Content-Lenght: "+str(os.path.getsize(file_open))+"\n\n" #segundo enter separa el header del body
-                writer.write(request)
-                writer.write(bytes(content_type,'utf-8'))
-                writer.write(request_lenght)           
-                lectura = os.read(fd1,cantidad_lectura)
-                print("ACA")
-                while(lectura != b''):
-                    writer.write(lectura)
+                    if(directory != ''):
+                        file_open = directory+'/'+archivo[1:]
+                    fd1 = os.open(file_open,os.O_RDONLY)
+                    request = version+b' 200 OK\n'
+                    content_type = "Content-Type: text/plain\n"
+                    request_lenght = b'Content-Lenght:20000\n\n'
+                    writer.write(request)
+                    writer.write(bytes(content_type,'utf-8'))
+                    writer.write(request_lenght)             
                     lectura = os.read(fd1,cantidad_lectura)
-                os.close(fd1)
-            '''except:                
+                    while(lectura != b''):
+                        writer.write(lectura)
+                        lectura = os.read(fd1,cantidad_lectura)
+                    os.close(fd1)
+            except:
                 print("El archivo no existe")				
-                print(archivo)
                 request = version +b' 404 Not Found\n'
                 writer.write(request)
-            else:
-                print("ALGO")'''
     await writer.drain()
 
 
