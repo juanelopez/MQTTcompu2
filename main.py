@@ -35,10 +35,10 @@ if __name__ == '__main__':
     query_mqtt = queue.Queue()    
     #hilos
         
-    #hilo_mqtt = glo.hilos.submit(mqtt.runmqtt,query_mqtt,broker,topics) #hilo de monitor mqtt
+    hilo_mqtt = glo.hilos.submit(mqtt.runmqtt,query_mqtt,broker,topics) #hilo de monitor mqtt
     hilo_server = glo.hilos.submit(runserver,PORT,cantidad_lectura,directory) #hilo de servidor web 
     hilo_guardado = glo.hilos.submit(filesaver.savemqtt,query_mqtt,directory) #hilo guardado de mqtt    
-    #hilo_mqtt.result()
+    hilo_mqtt.result()
     hilo_server.result()
     hilo_guardado.result()            
     
