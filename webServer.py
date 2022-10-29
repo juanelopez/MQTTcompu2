@@ -13,7 +13,7 @@ async def handle(reader, writer,cantidad_lectura,directory):
     peticion = asyncio.create_task(devolver_peticion(request_recibida,writer,cantidad_lectura,directory))
     #await logger
     await peticion
-    writer.close()
+    writer.close()    
 
 
 async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
@@ -21,6 +21,7 @@ async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
     dividir_request = request_recibida[0].decode().split(" ")
     metodo = dividir_request[0]
     archivo = dividir_request[1]
+    print(dividir_request)
     if(directory == "/"):
         directory = ""
     if (archivo == "/"):
@@ -48,7 +49,10 @@ async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
                     writer.write(request)
                     writer.write(bytes(content_type,'utf-8'))
                     writer.write(request_lenght)
-                    writer.write(bytes("<HTML><HEAD><TITLE>Pantalla de inicio</TITLE></HEAD><BODY>",'utf-8'))
+                    writer.write(bytes("<HTML><HEAD><TITLE>MQTT LOGGER</TITLE>",'utf-8'))
+                    writer.write(bytes("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3' crossorigin='anonymous'>",'utf-8'))
+                    writer.write(bytes("</HEAD><BODY>",'utf-8'))                    
+                    writer.write(bytes("<div class='page-header'><h1 > Logger mqtt computacion 2</h1></div>",'utf-8'))                    
                     if (directory == ''):
                         buscar_dir = os.scandir()
                     else:
@@ -56,7 +60,8 @@ async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
                     #print(buscar_dir)                    
                     for path in buscar_dir:
                         if(path.is_file()):                            
-                            link = '<a href="'+path.name+'"''</a>'+path.name+"<br>"                            
+                            link = '<div class="w-100"><a class="btn btn-outline-success btn-lg btn-block"  href="'+path.name+'"''</a>'+path.name
+                            link = link + '</div>'
                             writer.write(bytes(link,'utf-8'))
                     #writer.write(bytes("<a href='hola'>hola</a>",'utf-8'))
                     writer.write(bytes("</BODY></HTML>",'utf-8'))
@@ -83,6 +88,7 @@ async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
                 request = version +b' 404 Not Found\n'
                 writer.write(request)
     await writer.drain()
+    return
 
 
 async def webServer(PORT,cantidad_lectura,directory):
