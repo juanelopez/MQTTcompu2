@@ -2,7 +2,7 @@ import os
 import datetime
 
 def savemqtt(query_mqtt,directory):
-    print("GUARDADO")
+    print("Start file logger")
     fecha = datetime.date.today()  
     if(directory != ''):
         file_open = directory+'/'+str(fecha)

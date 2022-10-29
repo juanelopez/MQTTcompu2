@@ -1,0 +1,4 @@
+17:26:18.061718 - prod/events
+17:26:18.061874 - {"evento":"estado","mac":{"identificador":"VNT-0003","producto":true,"maquina":true,"firmware":1.000000}}
+17:26:18.106441 - prod/VNT-0003
+17:26:18.106643 - {"evento":"estado","estado":"ok"}

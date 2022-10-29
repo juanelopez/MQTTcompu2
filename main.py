@@ -12,7 +12,7 @@ import globales as glo
 import os
 
 def runserver(PORT,cantidad_lectura,directory):
-    print("START SERVER")
+    print("Start server")
     asyncio.run(webServer.webServer(PORT,cantidad_lectura,directory))
 
 def uploadlogger():

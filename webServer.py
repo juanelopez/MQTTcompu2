@@ -17,12 +17,12 @@ async def handle(reader, writer,cantidad_lectura,directory):
 
 
 async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
-    directorio = "/"
+    #directory = "/"
     dividir_request = request_recibida[0].decode().split(" ")
     metodo = dividir_request[0]
     archivo = dividir_request[1]
-    if(directorio == "/"):
-    	directorio = ""
+    if(directory == "/"):
+        directory = ""
     if (archivo == "/"):
         archivo = "/index.html"
         extension = "html"
@@ -30,7 +30,7 @@ async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
     else:
         extension = "txt"        
         dividir_500_extension = ["txt"]
-    version = str.encode(dividir_request[2])    
+    version = str.encode(dividir_request[2])        
     if(len(dividir_500_extension) > 1):
         enviar_500 = version + b' 500 Internal Server Error\n'
         writer.write(enviar_500)
@@ -49,15 +49,23 @@ async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
                     writer.write(bytes(content_type,'utf-8'))
                     writer.write(request_lenght)
                     writer.write(bytes("<HTML><HEAD><TITLE>Pantalla de inicio</TITLE></HEAD><BODY>",'utf-8'))
-                    for path in os.scandir():
+                    if (directory == ''):
+                        buscar_dir = os.scandir()
+                    else:
+                        buscar_dir = os.scandir(directory)
+                    #print(buscar_dir)                    
+                    for path in buscar_dir:
                         if(path.is_file()):                            
                             link = '<a href="'+path.name+'"''</a>'+path.name+"<br>"                            
                             writer.write(bytes(link,'utf-8'))
-                    writer.write(bytes("<a href='hola'>hola</a>",'utf-8'))
+                    #writer.write(bytes("<a href='hola'>hola</a>",'utf-8'))
                     writer.write(bytes("</BODY></HTML>",'utf-8'))
                 else:
                     if(directory != ''):
                         file_open = directory+'/'+archivo[1:]
+                    else:
+                        file_open = archivo[1:]
+                    print("Archivo mostrado",file_open)
                     fd1 = os.open(file_open,os.O_RDONLY)
                     request = version+b' 200 OK\n'
                     content_type = "Content-Type: text/plain\n"
