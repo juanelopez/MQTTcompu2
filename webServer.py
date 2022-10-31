@@ -57,13 +57,11 @@ async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
                         buscar_dir = os.scandir()
                     else:
                         buscar_dir = os.scandir(directory)
-                    #print(buscar_dir)                    
                     for path in buscar_dir:
                         if(path.is_file()):                            
                             link = '<div class="w-100"><a class="btn btn-outline-success btn-lg btn-block"  href="'+path.name+'"''</a>'+path.name
                             link = link + '</div>'
                             writer.write(bytes(link,'utf-8'))
-                    #writer.write(bytes("<a href='hola'>hola</a>",'utf-8'))
                     writer.write(bytes("</BODY></HTML>",'utf-8'))
                 else:
                     if(directory != ''):
@@ -87,9 +85,7 @@ async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
                 print("El archivo no existe")				
                 request = version +b' 404 Not Found\n'
                 writer.write(request)
-    await writer.drain()
-    return
-
+    await writer.drain()    
 
 async def webServer(PORT,cantidad_lectura,directory):
     server = await asyncio.start_server(lambda r,w: handle(r,w,cantidad_lectura,directory), ('::','0.0.0.0'),PORT)

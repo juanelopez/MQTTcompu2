@@ -16,8 +16,6 @@ def connect_mqtt(broker) -> mqtt_client:
     client.on_connect = on_connect
     client.connect(broker, port)
     return client
-
-
 def subscribe(client: mqtt_client,query_mqtt,topic):
     def on_message(username,password,msg):        
         query_mqtt.put(str(msg.topic))
@@ -25,23 +23,9 @@ def subscribe(client: mqtt_client,query_mqtt,topic):
         print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")               
     client.subscribe(topic)
     client.on_message = on_message
-
-'''
-def suball(client: mqtt_client,query_mqtt):
-    def onmsg(client, userdata,msg):
-        query_mqtt.put(str(msg.topic))
-        query_mqtt.put(str(msg.payload.decode()))
-        print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
-    client.subscribe(alltopic)
-    client.on_message = onmsg
-'''
-
-
 def runmqtt(query_mqtt,broker,topic):
     print("START MQTT")
     client = connect_mqtt(broker)
     for sub in topic:        
-        #subscribe(client,query_mqtt,sub)
-        glo.hilos.submit(subscribe,client,query_mqtt,sub)
-    #suball(client,query_mqtt)    
+        glo.hilos.submit(subscribe,client,query_mqtt,sub) #creando un hilo por topic
     client.loop_forever()

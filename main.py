@@ -13,8 +13,10 @@ import os
 
 def runserver(PORT,cantidad_lectura,directory):
     print("Start server")
-    asyncio.run(webServer.webServer(PORT,cantidad_lectura,directory))
-
+    try:
+        asyncio.run(webServer.webServer(PORT,cantidad_lectura,directory))
+    except:
+        print("Server no iniciado")
 def uploadlogger():
     print("subiendo a drive")
 
