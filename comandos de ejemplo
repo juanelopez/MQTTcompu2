@@ -1,0 +1,6 @@
+// usar este mejor
+
+python main.py -s 1024 -d guardado -p 5000 -b broker.hivemq.com -l test/# -l t/# -l sys/# -l testtopic/# -l debug/# -l raspberry/# -l esp/#
+
+//muchos retain raros
+python main.py -s 1024 -d guardado -p 5000 -b broker.emqx.io -l test/# -l t/# -l sys/# -l testtopic/# -l debug/# -l raspberry/# -l esp/#
