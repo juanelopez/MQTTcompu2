@@ -26,7 +26,7 @@ def savemqtt(query_mqtt,directory):
             os.write(fdmqtt,b' - ')
             os.write(fdmqtt,bytes(msg,'utf-8'))                             
             #os.close(fdmqtt)
-            print(msg)
+            #print(msg)
             if(fecha != datetime.date.today()):
                 os.write(fdmqtt,b'final del dia')
                 os.close(fdmqtt)                

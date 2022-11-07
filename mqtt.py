@@ -20,7 +20,7 @@ def subscribe(client: mqtt_client,query_mqtt,topic):
     def on_message(username,password,msg):        
         query_mqtt.put(str(msg.topic))
         query_mqtt.put(str(msg.payload.decode()))        
-        print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")               
+        print(f"Mensaje `{msg.payload.decode()}` de `{msg.topic}` topic")               
     client.subscribe(topic)
     client.on_message = on_message
 def runmqtt(query_mqtt,broker,topic):
