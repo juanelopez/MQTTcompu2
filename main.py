@@ -10,7 +10,8 @@ import webServer
 import filesaver
 import globales as glo
 import os
-
+import multiproceso
+import time
 def runserver(PORT,cantidad_lectura,directory):
     print("Start server")
     try:
@@ -34,16 +35,24 @@ if __name__ == '__main__':
     topics = args.topic
     broker = args.broker
     directory = args.file_dir
-    query_mqtt = queue.Queue()    
-
+        
+    print(type(glo.query_mqtt))
     #hilos        
-    hilo_mqtt = glo.hilos.submit(mqtt.runmqtt,query_mqtt,broker,topics) #hilo de monitor mqtt
+    hilo_mqtt = glo.hilos.submit(mqtt.runmqtt,glo.query_mqtt,broker,topics) #hilo de monitor mqtt
     hilo_server = glo.hilos.submit(runserver,PORT,cantidad_lectura,directory) #hilo de servidor web 
-    hilo_guardado = glo.hilos.submit(filesaver.savemqtt,query_mqtt,directory) #hilo guardado de mqtt    
-    hilo_mqtt.result()
-    hilo_server.result()
-    hilo_guardado.result()            
+    hilo_guardado = glo.hilos.submit(filesaver.savemqtt,glo.query_mqtt,directory) #hilo guardado de mqtt    
     
+    
+    #multiproceso.startProcess("hola")
+    #multiproceso.
+    hilo_server.result()
+    hilo_guardado.result()                
+    #print("A dormir")
+    #time.sleep(30)
+    #print("NO LO SONIEEE")
+    #hola = glo.hilos.submit(multiproceso.hola)
+    #hola.result()
+    hilo_mqtt.result()
 #otro proceso que agregue hilos o procesos(mejor) con ipc en caliente
 #escuchar en ipv4 y v6
 #agregar base de datos con libreria mysql con docker
