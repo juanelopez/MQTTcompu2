@@ -5,13 +5,16 @@
 import asyncio 
 import argparse
 import queue
+import os
+import multiprocessing as mp
+import time
+
 import mqtt
 import webServer
 import filesaver
 import globales as glo
-import os
 import multiproceso
-import time
+import basedata
 def runserver(PORT,cantidad_lectura,directory):
     print("Start server")
     try:
@@ -20,6 +23,9 @@ def runserver(PORT,cantidad_lectura,directory):
         print("Server no iniciado")
 def uploadlogger():
     print("subiendo a drive")
+def meterDatos(q):
+    for i in range (0,10):
+        q.put(i)
 
 if __name__ == '__main__':
     #print("MAIN")
@@ -38,21 +44,29 @@ if __name__ == '__main__':
         
     print(type(glo.query_mqtt))
     #hilos        
-    hilo_mqtt = glo.hilos.submit(mqtt.runmqtt,glo.query_mqtt,broker,topics) #hilo de monitor mqtt
-    hilo_server = glo.hilos.submit(runserver,PORT,cantidad_lectura,directory) #hilo de servidor web 
-    hilo_guardado = glo.hilos.submit(filesaver.savemqtt,glo.query_mqtt,directory) #hilo guardado de mqtt    
+    ctx = mp.get_context('spawn')
+    q = ctx.Queue()
+    #hilo_mqtt = glo.hilos.submit(mqtt.runmqtt,glo.query_mqtt,broker,topics) #hilo de monitor mqtt
+    #hilo_server = glo.hilos.submit(runserver,PORT,cantidad_lectura,directory) #hilo de servidor web 
+    #hilo_guardado = glo.hilos.submit(filesaver.savemqtt,glo.query_mqtt,directory) #hilo guardado de mqtt    
+    print('I AM process id:', os.getpid())
+    meterDatos(q)
+    p = ctx.Process(target=basedata.databaseStart, args=(q,))
+    p.start()
+    creacionDB = q.get()
+    if(creacionDB == "No hay base de datos"):
+        print("No hay DB, verificar")
+    elif(creacionDB == "Configurado"):
+        print("Base de datos lista")
+    p.join()    
+    p2 = ctx.Process(target=basedata.databasePUT, args=(q,))
+    p2.start()
+    p2.join()
     
     
-    #multiproceso.startProcess("hola")
-    #multiproceso.
-    hilo_server.result()
-    hilo_guardado.result()                
-    #print("A dormir")
-    #time.sleep(30)
-    #print("NO LO SONIEEE")
-    #hola = glo.hilos.submit(multiproceso.hola)
-    #hola.result()
-    hilo_mqtt.result()
+    #hilo_server.result()
+    #hilo_guardado.result()                
+    #hilo_mqtt.result()
 #otro proceso que agregue hilos o procesos(mejor) con ipc en caliente
 #escuchar en ipv4 y v6
 #agregar base de datos con libreria mysql con docker
