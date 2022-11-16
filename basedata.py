@@ -15,10 +15,21 @@ TABLES['mensajes'] = (
     "CREATE TABLE `mensajesmqtt` ("
     "  `idMsj` int(11) NOT NULL AUTO_INCREMENT,"
     "  `tiempo` datetime NOT NULL,"
-    "  `mensaje` varchar(200) NOT NULL,"
+    "  `mensaje` varchar(600) NOT NULL,"
     "  `topic` varchar(100) NOT NULL,"    
     "  PRIMARY KEY (`idMsj`)"
     ") ENGINE=InnoDB")
+
+"""fecha = str(datetime.now().date())
+TABLES['mensajes'] = (
+    "CREATE TABLE `"+fecha+"` ("
+    "  `idMsj` int(11) NOT NULL AUTO_INCREMENT,"
+    "  `tiempo` datetime NOT NULL,"
+    "  `mensaje` varchar(600) NOT NULL,"
+    "  `topic` varchar(100) NOT NULL,"    
+    "  PRIMARY KEY (`idMsj`)"
+    ") ENGINE=InnoDB")
+"""
 
 add_msj = ("INSERT INTO mensajesmqtt "
             "(tiempo, mensaje, topic) "
@@ -85,17 +96,27 @@ def databasePUT(q):
     estadisticas = '{"estadisticas":true}'
     topic = "prod/test"
     data_salary = {
-        'tiempo': datetime.now(),
-        'mensaje': estadisticas,
-        'topic': topic,        
-        }
-    cursor.execute(add_msj, data_salary)
-
-    # Make sure data is committed to the database
-    cnx.commit()
-    cursor.close()
-    cnx.close()
+                'tiempo': datetime.now(),
+                'mensaje': estadisticas,
+                'topic': topic,        
+            }
+    #cursor.execute(add_msj, data_salary)
+    print("Hoy es",datetime.now().date())
+    # Make sure data is committed to the database    
+    print("COMENZANDO LOGUEO")
     while True:
         lectura = q.get()
         if(lectura != None):
-            print("Hay algo: ",lectura)
+            #print("Hay algo: ",lectura)
+            mqttCompleto = lectura.split("DELIMITA",1)
+            #print(len(mqttCompleto))
+            if(len(mqttCompleto) == 2 and len(mqttCompleto[1]) < 600 and len(mqttCompleto[0]) < 200):                
+                data_salary = {
+                    'tiempo': datetime.now(),
+                    'mensaje': mqttCompleto[1],
+                    'topic': mqttCompleto[0],        
+                }                
+                cursor.execute(add_msj, data_salary)
+                cnx.commit()
+    cnx.close()
+    cursor.close()
