@@ -9,6 +9,7 @@ async def handle(reader, writer,cantidad_lectura,directory):
     request_recibida = data.split(b'\r\n')
     message = data.decode()
     addr = writer.get_extra_info('peername')
+    print("ADRESS:",addr)
     #logger = asyncio.create_task(complementarias.mostrar_direccion(addr,directorio))
     peticion = asyncio.create_task(devolver_peticion(request_recibida,writer,cantidad_lectura,directory))
     #await logger
@@ -17,7 +18,7 @@ async def handle(reader, writer,cantidad_lectura,directory):
 
 
 async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
-    #directory = "/"
+    #directory = "/"    
     dividir_request = request_recibida[0].decode().split(" ")
     metodo = dividir_request[0]
     archivo = dividir_request[1]
