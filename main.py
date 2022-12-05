@@ -1,19 +1,11 @@
 #!/usr/bin/python3
-
-
-
 import asyncio 
 import argparse
-#import queue
-#import os
 import multiprocessing as mp
-#import time
-
 import mqtt
 import webServer
 import filesaver
 import globales as glo
-#import multiproceso
 import basedata
 
 defaultTopic =["test/comp2/python","test/comp2/2022"] #topics default a los cuales se subscribe posteriormente
@@ -44,25 +36,24 @@ if __name__ == '__main__':
     #Cola de mensajes mqtt multiproceso
     ctx = mp.get_context('spawn')
     multiprocq = ctx.Queue()
-    
-    
-    #print('I AM process id:', os.getpid())
+        
     #proceso de configuracion base de datos
-    p = ctx.Process(target=basedata.databaseStart, args=(multiprocq,))
-    p.start()
+    configDB = ctx.Process(target=basedata.databaseStart, args=(multiprocq,))
+    configDB.start()
     creacionDB = multiprocq.get()
     if(creacionDB == "No hay base de datos"):
         print("No hay DB, verificar")
     elif(creacionDB == "Configurado"):
         print("Base de datos lista")
-    p.join()    
+    configDB.join()    
+
     #proceso que recibe por mqtt mensajes y los guarda en la base de datos
-    p2 = ctx.Process(target=basedata.databasePUT, args=(multiprocq,))
-    p2.start()    
+    saveDB = ctx.Process(target=basedata.databasePUT, args=(multiprocq,))
+    saveDB.start()    
+
     #hilos para mqtt, servidor web de visualizacion y guardado en archivos    
-    hilo_mqtt = glo.hilos.submit(mqtt.runmqtt,glo.query_mqtt,broker,topics,multiprocq,glo.query_coms) #hilo de monitor mqtt
-    
-    for sub in defaultTopic: #Subscripciones mientras funciona el mqttLogger
+    hilo_mqtt = glo.hilos.submit(mqtt.runmqtt,glo.query_mqtt,broker,topics,multiprocq,glo.query_coms) #hilo de monitor mqtt    
+    for sub in defaultTopic: #Subscripciones mientras se esta conectado al broker
         subNew = glo.hilos.submit(mqtt.newSub,sub,glo.query_coms,glo.query_mqtt,multiprocq)    
     hilo_server = glo.hilos.submit(runserver,PORT,cantidad_lectura,directory) #hilo de servidor web 
     hilo_guardado = glo.hilos.submit(filesaver.savemqtt,glo.query_mqtt,directory) #hilo guardado de mqtt    
@@ -70,8 +61,8 @@ if __name__ == '__main__':
     hilo_guardado.result()                
     hilo_mqtt.result()
     subNew.result()
-    p2.join()
+    saveDB.join()
 
-#otro proceso que agregue hilos o procesos(mejor) con ipc en caliente
+
 #escuchar en ipv4 y v6
 #agregar base de datos con libreria mysql con docker
