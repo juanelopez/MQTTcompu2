@@ -89,7 +89,7 @@ async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
     await writer.drain()    
 
 async def webServer(PORT,cantidad_lectura,directory):
-    server = await asyncio.start_server(lambda r,w: handle(r,w,cantidad_lectura,directory), ('::','0.0.0.0'),PORT)
+    server = await asyncio.start_server(lambda r,w: handle(r,w,cantidad_lectura,directory), ('::','0.0.0.0'),PORT)#ipv4 e ipv6
     addr = server.sockets[0].getsockname()
     print(f'Serving on {addr}')  
     async with server:

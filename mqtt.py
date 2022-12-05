@@ -4,7 +4,7 @@ import globales as glo
 import queue
 port = 1883
 client_id = f'python-mqtt-{random.randint(0, 100)}'
-i = 0
+
 def connect_mqtt(broker) -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
@@ -17,11 +17,11 @@ def connect_mqtt(broker) -> mqtt_client:
     client.on_connect = on_connect
     client.connect(broker, port)
     return client
+
 def subscribe(client: mqtt_client,query_mqtt,topic,multiprocq):
     def on_message(username,password,msg):        
         query_mqtt.put(str(msg.topic))
         query_mqtt.put(str(msg.payload.decode()))  
-        #multiprocq.put(str(glo.i))
         multiprocq.put(str(msg.topic)+"DELIMITA"+str(msg.payload.decode()))    
           
         print(f"Mensaje `{msg.payload.decode()}` de `{msg.topic}` topic")               
@@ -31,18 +31,16 @@ def subscribe(client: mqtt_client,query_mqtt,topic,multiprocq):
 def runmqtt(query_mqtt,broker,topic,multiprocq,query_coms):
     print("START MQTT")
     client = connect_mqtt(broker)  
-    print("Cliente es",client)  
     query_coms.put(client)
     for sub in topic:        
         glo.hilos.submit(subscribe,client,query_mqtt,sub,multiprocq) #creando un hilo por topic
     client.loop_forever()
 def newSub(topic,query_coms,query_mqtt,multiprocq):
-    print("Agregando topic: ",topic)
+    print("New topic: ",topic)
     #topic = "raspberry/#"        
     while True:
         try:
             client = query_coms.get()
-            print("Si",client)
             glo.hilos.submit(subscribe,client,query_mqtt,topic,multiprocq)
             query_coms.put(client)
             return;        

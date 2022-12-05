@@ -20,16 +20,6 @@ TABLES['mensajes'] = (
     "  PRIMARY KEY (`idMsj`)"
     ") ENGINE=InnoDB")
 
-"""fecha = str(datetime.now().date())
-TABLES['mensajes'] = (
-    "CREATE TABLE `"+fecha+"` ("
-    "  `idMsj` int(11) NOT NULL AUTO_INCREMENT,"
-    "  `tiempo` datetime NOT NULL,"
-    "  `mensaje` varchar(600) NOT NULL,"
-    "  `topic` varchar(100) NOT NULL,"    
-    "  PRIMARY KEY (`idMsj`)"
-    ") ENGINE=InnoDB")
-"""
 
 add_msj = ("INSERT INTO mensajesmqtt "
             "(tiempo, mensaje, topic) "
@@ -54,7 +44,7 @@ def databaseStart(q):
 
     try:
         cursor.execute("USE {}".format(DB_NAME))
-        print("Usando la base de datos->",DB_NAME)
+        print("Using this database->",DB_NAME)
     except mysql.connector.Error as err:
         print("Database {} does not exists.".format(DB_NAME))
         if err.errno == errorcode.ER_BAD_DB_ERROR:
@@ -71,7 +61,7 @@ def databaseStart(q):
             cursor.execute(table_description)
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                print("already exists.")
+                print("Already exists this table")
             else:
                 print(err.msg)
         else:
@@ -79,7 +69,7 @@ def databaseStart(q):
 
     cursor.close()
     cnx.close()
-    estado = q.put( "Configurado")
+    estado = q.put( "Config success")
     print(estado)
     return
 
@@ -87,12 +77,12 @@ def databasePUT(q):
     try:
         cnx = mysql.connector.connect(user="python",passwd="123456",host="localhost",port="5000",database = "Logger")
     except:
-        estado = q.put( "No hay base de datos")
+        estado = q.put( "Database not found")
         print(estado)
         return
     cursor = cnx.cursor()
-    print('parent process:', os.getppid())
-    print('I AM process id:', os.getpid())
+    #print('parent process:', os.getppid())
+    #print('I AM process id:', os.getpid())
     estadisticas = '{"estadisticas":true}'
     topic = "prod/test"
     data_salary = {

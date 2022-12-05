@@ -4,19 +4,19 @@
 
 import asyncio 
 import argparse
-import queue
-import os
+#import queue
+#import os
 import multiprocessing as mp
-import time
+#import time
 
 import mqtt
 import webServer
 import filesaver
 import globales as glo
-import multiproceso
+#import multiproceso
 import basedata
 
-defaultTopic =["test/comp2/python","test/comp2/2022"]
+defaultTopic =["test/comp2/python","test/comp2/2022"] #topics default a los cuales se subscribe posteriormente
 
 def runserver(PORT,cantidad_lectura,directory):
     print("Start server")
@@ -25,9 +25,6 @@ def runserver(PORT,cantidad_lectura,directory):
     except:
         print("Server no iniciado")
         exit(1)
-def meterDatos(q):
-    for i in range (0,10):
-        q.put(i)
 
 if __name__ == '__main__':
     #print("MAIN")
@@ -38,20 +35,19 @@ if __name__ == '__main__':
     parser.add_argument('-b','--b',action="store",dest = "broker",required= True,type=str , help = "Broker al cual se quiere conectar")    
     parser.add_argument('-l','--list', action='append', dest = "topic",type=str, required=True, help="todos los topics que deben guardarse usar -l 'topic/#' -l 'topic2/topicn'")    
     args = parser.parse_args()
-    PORT = args.port
+    PORT = args.port #puerto de servidor web
     cantidad_lectura = args.size
-    topics = args.topic
-    broker = args.broker
-    directory = args.file_dir
-        
-    #print(type(glo.query_mqtt))
+    topics = args.topic #topics que se subscriben al principio
+    broker = args.broker #broker que se define
+    directory = args.file_dir #directorio donde se guardan los archivos de log
+
     #Cola de mensajes mqtt multiproceso
     ctx = mp.get_context('spawn')
     multiprocq = ctx.Queue()
     
     
-    print('I AM process id:', os.getpid())
-    #proceso de creacion de base de datos
+    #print('I AM process id:', os.getpid())
+    #proceso de configuracion base de datos
     p = ctx.Process(target=basedata.databaseStart, args=(multiprocq,))
     p.start()
     creacionDB = multiprocq.get()
@@ -63,20 +59,19 @@ if __name__ == '__main__':
     #proceso que recibe por mqtt mensajes y los guarda en la base de datos
     p2 = ctx.Process(target=basedata.databasePUT, args=(multiprocq,))
     p2.start()    
-    #meterDatos(multiprocq)
     #hilos para mqtt, servidor web de visualizacion y guardado en archivos    
     hilo_mqtt = glo.hilos.submit(mqtt.runmqtt,glo.query_mqtt,broker,topics,multiprocq,glo.query_coms) #hilo de monitor mqtt
     
-    for sub in defaultTopic:
-        subNew = glo.hilos.submit(mqtt.newSub,sub,glo.query_coms,glo.query_mqtt,multiprocq)
-    #subNew = glo.hilos.submit(mqtt.newSub,"comp2/test/#",glo.query_coms,glo.query_mqtt,multiprocq)    
+    for sub in defaultTopic: #Subscripciones mientras funciona el mqttLogger
+        subNew = glo.hilos.submit(mqtt.newSub,sub,glo.query_coms,glo.query_mqtt,multiprocq)    
     hilo_server = glo.hilos.submit(runserver,PORT,cantidad_lectura,directory) #hilo de servidor web 
     hilo_guardado = glo.hilos.submit(filesaver.savemqtt,glo.query_mqtt,directory) #hilo guardado de mqtt    
     hilo_server.result()
     hilo_guardado.result()                
     hilo_mqtt.result()
-    #subNew.result()
+    subNew.result()
     p2.join()
+
 #otro proceso que agregue hilos o procesos(mejor) con ipc en caliente
 #escuchar en ipv4 y v6
 #agregar base de datos con libreria mysql con docker
