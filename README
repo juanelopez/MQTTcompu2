@@ -34,9 +34,9 @@ siendo ipLAN reemplazado por la ip del dispositivo en la red que se puede encont
 - Solucion: Puerto ocupado.
 
 **Problema: No se muestran los archivos en el servidor web.**
--Solucion: No se elegio la carpeta correcta.
+- Solucion: No se elegio la carpeta correcta.
 
 **Problema: No se subscribe al broker.**
--Solucion: Revisar la conexion a internet.
--Solucion2: Revisar si realmente el broker funciona.
--Solucion3: Revisar si esta bien escrita la direccion.
+- Solucion: Revisar la conexion a internet.
+- Solucion2: Revisar si realmente el broker funciona.
+- Solucion3: Revisar si esta bien escrita la direccion.
