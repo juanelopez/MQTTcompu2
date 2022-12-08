@@ -29,6 +29,7 @@ Procesa solicitudes GET de texto plano y html(pantalla principal).
 Pantalla principal con botones donde se eligen los archivos a visualizar.
 
 Archivo main.py.
+Parseo de los argumentos tamaño de lectura, directorio de guardado, puerto de servidor web, broker y lista de topics.
 Ejecucion de proceso de creacion de base de datos/tabla.
 Ejecucion de proceso de logueo en base de datos.
 Creacion de queue de hilos y queue de proceso.
