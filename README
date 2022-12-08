@@ -11,7 +11,7 @@ Los parametros que se usan son:
 - -l esp/# -l raspberry/# (topicos a los que se quiere subscribir, se puede subscribir a mas escribiendo -l y el topic)
 
 # Ejemplo comando
-$python main.py -s 1024 -d guardado -p 3000 -b broker.hivemq.com -l test/# -l t/# -l sys/# -l testtopic/# -l debug/# -l raspberry/# -l esp/#
+- $python main.py -s 1024 -d guardado -p 3000 -b broker.hivemq.com -l test/# -l t/# -l sys/# -l testtopic/# -l debug/# -l raspberry/# -l esp/#
 
 # Acceso desde navegador.
 
