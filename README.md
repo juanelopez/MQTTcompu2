@@ -16,11 +16,11 @@ Los parametros que se usan son:
 ### Acceso desde navegador.
 
 Para acceder al servidor web por ipv4 localmente se usa:
-- http://localhost:3000
+http://localhost:3000
 Para acceder por ipv6 se usa:
-- http://[::1]:3000
+http://[::1]:3000
 En caso de querer acceder desde un equipo en la red LAN se usa:
-- http://"ipLAN":3000
+http://"ipLAN":3000
 siendo ipLAN reemplazado por la ip del dispositivo en la red que se puede encontrar con ifconfig en linux o ipconfig en windows desde sus terminales.
 
 ## PROBLEMAS-SOLUCION.
