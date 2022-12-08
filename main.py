@@ -62,7 +62,3 @@ if __name__ == '__main__':
     hilo_mqtt.result()
     subNew.result()
     saveDB.join()
-
-
-#escuchar en ipv4 y v6
-#agregar base de datos con libreria mysql con docker
