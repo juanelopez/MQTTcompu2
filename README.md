@@ -1,4 +1,4 @@
-### Logger mqtt computación 2.
+# Logger mqtt computación 2.
 
 
 ## EJECUCION.
@@ -10,10 +10,10 @@ Los parametros que se usan son:
 - -b broker.hivemq.com (broker al que se quiere conectar)
 - -l esp/# -l raspberry/# (topicos a los que se quiere subscribir, se puede subscribir a mas escribiendo -l y el topic)
 
-# Ejemplo comando
+### Ejemplo comando
 - $python main.py -s 1024 -d guardado -p 3000 -b broker.hivemq.com -l test/# -l t/# -l sys/# -l testtopic/# -l debug/# -l raspberry/# -l esp/#
 
-# Acceso desde navegador.
+### Acceso desde navegador.
 
 Para acceder al servidor web por ipv4 localmente se usa:
 http://localhost:3000
