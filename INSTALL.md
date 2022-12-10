@@ -1,6 +1,6 @@
 # Dependencias necesarias para ejecutar:
 
-## python3
+## python3.7+
 ```shell
 $ pip install mysql-connector-python
 $ pip install paho-mqtt
