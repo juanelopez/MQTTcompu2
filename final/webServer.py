@@ -1,6 +1,5 @@
 import asyncio
 import os
-import datetime
 
 ##########WEBSERVER############
 async def handle(reader, writer,cantidad_lectura,directory):
@@ -10,9 +9,7 @@ async def handle(reader, writer,cantidad_lectura,directory):
     message = data.decode()
     addr = writer.get_extra_info('peername')
     print("ADDRESS:",addr)
-    #logger = asyncio.create_task(complementarias.mostrar_direccion(addr,directorio))
     peticion = asyncio.create_task(devolver_peticion(request_recibida,writer,cantidad_lectura,directory))
-    #await logger
     await peticion
     writer.close()    
 
