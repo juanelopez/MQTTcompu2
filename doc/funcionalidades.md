@@ -25,7 +25,7 @@
 - Escribe con timestamp(solo hora) el topic y mensaje mqtt que se recibe por la queue mqtt.
 
 ### Archivo webServer.py.
-- Ejecuta un webserver local.
+- Ejecuta un webserver local asincronamente.
 - Procesa solicitudes GET de texto plano y html(pantalla principal).
 - Pantalla principal con botones donde se eligen los archivos a visualizar.
 
