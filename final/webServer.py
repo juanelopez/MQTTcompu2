@@ -6,7 +6,6 @@ async def handle(reader, writer,cantidad_lectura,directory):
     data = await reader.read(100)
     request_recibida = []
     request_recibida = data.split(b'\r\n')
-    message = data.decode()
     addr = writer.get_extra_info('peername')
     print("ADDRESS:",addr)
     peticion = asyncio.create_task(devolver_peticion(request_recibida,writer,cantidad_lectura,directory))
