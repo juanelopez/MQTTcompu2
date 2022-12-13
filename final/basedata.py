@@ -24,11 +24,11 @@ TABLES['mensajes'] = (
 add_msj = ("INSERT INTO mensajesmqtt "
             "(tiempo, mensaje, topic) "
             "VALUES (%(tiempo)s, %(mensaje)s, %(topic)s)")
-def databaseStart(q):
+def databaseStart(q,userdb,passdb,database,portdb):
     print('parent process:', os.getppid())
     print('process id:', os.getpid())
     try:
-        cnx = mysql.connector.connect(user="python",passwd="123456",host="localhost",port="5000")
+        cnx = mysql.connector.connect(user=userdb,passwd=passdb,host="localhost",port=portdb)
     except:
         estado = q.put( "No hay base de datos")
         print(estado)
@@ -37,20 +37,20 @@ def databaseStart(q):
     def create_database(cursor):
         try:
             cursor.execute(
-                "CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8'".format(DB_NAME))
+                "CREATE DATABASE {} DEFAULT CHARACTER SET 'utf8'".format(database))
         except mysql.connector.Error as err:
             print("Failed creating database: {}".format(err))
             exit(1)
 
     try:
-        cursor.execute("USE {}".format(DB_NAME))
-        print("Using this database->",DB_NAME)
+        cursor.execute("USE {}".format(database))
+        print("Using this database->",database)
     except mysql.connector.Error as err:
-        print("Database {} does not exists.".format(DB_NAME))
+        print("Database {} does not exists.".format(database))
         if err.errno == errorcode.ER_BAD_DB_ERROR:
             create_database(cursor)
-            print("Database {} created successfully.".format(DB_NAME))
-            cnx.database = DB_NAME
+            print("Database {} created successfully.".format(database))
+            cnx.database = database
         else:
             print(err)
             exit(1)
@@ -73,9 +73,9 @@ def databaseStart(q):
     print(estado)
     return
 
-def databasePUT(q):
+def databasePUT(q,userdb,passdb,database,portdb):
     try:
-        cnx = mysql.connector.connect(user="python",passwd="123456",host="localhost",port="5000",database = "Logger")
+        cnx = mysql.connector.connect(user=userdb,passwd=passdb,host="localhost",port=portdb,database = database)
     except:
         estado = q.put( "Database not found")
         print(estado)
@@ -90,7 +90,6 @@ def databasePUT(q):
                 'mensaje': estadisticas,
                 'topic': topic,        
             }
-    #cursor.execute(add_msj, data_salary)
     print("Hoy es",datetime.now().date())
     # Make sure data is committed to the database    
     print("COMENZANDO LOGUEO")

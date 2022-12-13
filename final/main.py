@@ -25,6 +25,10 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--directory',action="store", dest="file_dir", default="/", type=str, help="Directorio para guardar")
     parser.add_argument('-p', '--port',action="store", dest="port", required=True, type=int, help="Puerto en donde espera conexiones nuevas")
     parser.add_argument('-b','--b',action="store",dest = "broker",required= True,type=str , help = "Broker al cual se quiere conectar")    
+    parser.add_argument('-u', '--userdb',action="store", dest="userdb", required=True,default="", type=str, help="Usuario de base de datos")
+    parser.add_argument('-ps', '--passdb',action="store", dest="passdb", required=True,default="", type=str, help="Password base de datos")
+    parser.add_argument('-db', '--database',action="store", dest="database", required=True,default="", type=str, help="Database a conectar/crear")
+    parser.add_argument('-pdb', '--portdb',action="store", dest="portdb", required=True, type=int, help="Puerto en esta la base de datos")
     parser.add_argument('-l','--list', action='append', dest = "topic",type=str, required=True, help="todos los topics que deben guardarse usar -l 'topic/#' -l 'topic2/topicn'")    
     args = parser.parse_args()
     PORT = args.port #puerto de servidor web
@@ -32,13 +36,16 @@ if __name__ == '__main__':
     topics = args.topic #topics que se subscriben al principio
     broker = args.broker #broker que se define
     directory = args.file_dir #directorio donde se guardan los archivos de log
-
+    userdb = args.userdb
+    passdb = args.passdb
+    database = args.database
+    portdb = args.portdb
     #Cola de mensajes mqtt multiproceso
     ctx = mp.get_context('spawn')
     multiprocq = ctx.Queue()
         
     #proceso de configuracion base de datos
-    configDB = ctx.Process(target=basedata.databaseStart, args=(multiprocq,))
+    configDB = ctx.Process(target=basedata.databaseStart, args=(multiprocq,userdb,passdb,database,portdb,))
     configDB.start()
     creacionDB = multiprocq.get()
     if(creacionDB == "No hay base de datos"):
@@ -48,7 +55,7 @@ if __name__ == '__main__':
     configDB.join()    
 
     #proceso que recibe por mqtt mensajes y los guarda en la base de datos
-    saveDB = ctx.Process(target=basedata.databasePUT, args=(multiprocq,))
+    saveDB = ctx.Process(target=basedata.databasePUT, args=(multiprocq,userdb,passdb,database,portdb,))
     saveDB.start()    
 
     #hilos para mqtt, servidor web de visualizacion y guardado en archivos    
@@ -59,6 +66,8 @@ if __name__ == '__main__':
     hilo_guardado = glo.hilos.submit(filesaver.savemqtt,glo.query_mqtt,directory) #hilo guardado de mqtt    
     hilo_server.result()
     hilo_guardado.result()                
-    hilo_mqtt.result()
-    subNew.result()
+    hilo_mqtt.result()    
+    subNew.result()    
     saveDB.join()
+    
+    
