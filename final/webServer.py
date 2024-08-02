@@ -76,8 +76,9 @@ async def devolver_peticion(request_recibida,writer,cantidad_lectura,directory):
                     lectura = os.read(fd1,cantidad_lectura)
                     while(lectura != b''):
                         writer.write(lectura)
-                        lectura = os.read(fd1,cantidad_lectura)
+                        lectura = os.read(fd1,cantidad_lectura)                    
                     os.close(fd1)
+                    print("Final envio de ",file_open)
             except:
                 print("El archivo no existe")				
                 request = version +b' 404 Not Found\n'
